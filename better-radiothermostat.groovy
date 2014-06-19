@@ -30,6 +30,13 @@ metadata {
         capability "Refresh"
         capability "Sensor"
         capability "Polling"
+
+	command "heatLevelUp"
+	command "heatLevelDown"
+	command "coolLevelUp"
+	command "coolLevelDown"
+	command "switchMode"
+	command "switchFanMode"
 	}
 
 	simulator {
@@ -71,9 +78,6 @@ metadata {
 		standardTile("refresh", "device.thermostatMode", inactiveLabel: false, decoration: "flat") {
 			state "default", action:"polling.poll", icon:"st.secondary.refresh"
 		}
-		standardTile("configure", "device.configure", inactiveLabel: false, decoration: "flat") {
-			state "configure", label:'  ', action:"configuration.configure", icon:"st.secondary.configure"
-		}
         standardTile("heatLevelUp", "device.heatingSetpoint", canChangeIcon: false, inactiveLabel: false, decoration: "flat") {
                         state "heatLevelUp", label:'  ', action:"heatLevelUp", icon:"st.thermostat.thermostat-up"
         }
@@ -88,7 +92,7 @@ metadata {
         }
         
 		main "temperature"
-		details(["temperature", "mode", "fanMode", "heatLevelDown", "heatingSetpoint", "heatLevelUp", "coolLevelDown", "coolingSetpoint", "coolLevelUp", "refresh", "configure"])
+		details(["temperature", "mode", "fanMode", "heatLevelDown", "heatingSetpoint", "heatLevelUp", "coolLevelDown", "coolingSetpoint", "coolLevelUp", "refresh"])
 	}
 }
 
