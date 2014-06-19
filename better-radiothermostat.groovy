@@ -37,8 +37,8 @@ metadata {
 	}
 
 	tiles {
-    	valueTile("temperature", "device.temperature", width: 2, height: 2) {
-			state("temperature", label:'${currentValue}°', unit:"F",
+		valueTile("temperature", "device.temperature", width: 2, height: 2) {
+			state("temperature", label:'${currentValue}°', unit:'F',
 				backgroundColors:[
 					[value: 31, color: "#153591"],
 					[value: 44, color: "#1e9cbb"],
@@ -51,33 +51,44 @@ metadata {
 			)
 		}
 		standardTile("mode", "device.thermostatMode", inactiveLabel: false, decoration: "flat") {
-			state "off", label:'${name}', action:"thermostat.setThermostatMode"
-			state "cool", label:'${name}', action:"thermostat.setThermostatMode"
-			state "heat", label:'${name}', action:"thermostat.setThermostatMode"
-			state "emergencyHeat", label:'${name}', action:"thermostat.setThermostatMode"
+			state "off", label:'', action:"switchMode", icon:"st.thermostat.heating-cooling-off"
+			state "heat", label:'', action:"switchMode", icon:"st.thermostat.heat"
+			state "emergencyHeat", label:'', action:"switchMode", icon:"st.thermostat.emergency-heat"
+			state "cool", label:'', action:"switchMode", icon:"st.thermostat.cool"
+			state "auto", label:'', action:"switchMode", icon:"st.thermostat.auto"
 		}
 		standardTile("fanMode", "device.thermostatFanMode", inactiveLabel: false, decoration: "flat") {
-			state "fanAuto", label:'${name}', action:"thermostat.setThermostatFanMode"
-            state "fanAuto/Circulate", label:'${name}', action:"thermostat.setThermostatFanMode"
-			state "fanOn", label:'${name}', action:"thermostat.setThermostatFanMode"
-		}
-    	controlTile("heatSliderControl", "device.heatingSetpoint", "slider", height: 1, width: 2, inactiveLabel: false) {
-			state "setHeatingSetpoint", action:"thermostat.setHeatingSetpoint", backgroundColor:"#d04e00"
+			state "fanAuto", label:'', action:"switchFanMode", icon:"st.thermostat.fan-auto"
+			state "fanOn", label:'', action:"switchFanMode", icon:"st.thermostat.fan-on"
+			state "fanCirculate", label:'  ', action:"switchFanMode", icon:"st.thermostat.fan-circulate"
 		}
 		valueTile("heatingSetpoint", "device.heatingSetpoint", inactiveLabel: false, decoration: "flat") {
 			state "heat", label:'${currentValue}° heat', unit:"F", backgroundColor:"#ffffff"
 		}
-		controlTile("coolSliderControl", "device.coolingSetpoint", "slider", height: 1, width: 2, inactiveLabel: false) {
-			state "setCoolingSetpoint", action:"thermostat.setCoolingSetpoint", backgroundColor: "#1e9cbb"
-		}
 		valueTile("coolingSetpoint", "device.coolingSetpoint", inactiveLabel: false, decoration: "flat") {
 			state "cool", label:'${currentValue}° cool', unit:"F", backgroundColor:"#ffffff"
 		}
-		standardTile("refresh", "device.temperature", inactiveLabel: false, decoration: "flat") {
-			state "default", action:"refresh.refresh", icon:"st.secondary.refresh"
+		standardTile("refresh", "device.thermostatMode", inactiveLabel: false, decoration: "flat") {
+			state "default", action:"polling.poll", icon:"st.secondary.refresh"
 		}
+		standardTile("configure", "device.configure", inactiveLabel: false, decoration: "flat") {
+			state "configure", label:'  ', action:"configuration.configure", icon:"st.secondary.configure"
+		}
+        standardTile("heatLevelUp", "device.heatingSetpoint", canChangeIcon: false, inactiveLabel: false, decoration: "flat") {
+                        state "heatLevelUp", label:'  ', action:"heatLevelUp", icon:"st.thermostat.thermostat-up"
+        }
+        standardTile("heatLevelDown", "device.heatingSetpoint", canChangeIcon: false, inactiveLabel: false, decoration: "flat") {
+                        state "heatLevelDown", label:'  ', action:"heatLevelDown", icon:"st.thermostat.thermostat-down"
+        }
+        standardTile("coolLevelUp", "device.heatingSetpoint", canChangeIcon: false, inactiveLabel: false, decoration: "flat") {
+                        state "coolLevelUp", label:'  ', action:"coolLevelUp", icon:"st.thermostat.thermostat-up"
+        }
+        standardTile("coolLevelDown", "device.heatingSetpoint", canChangeIcon: false, inactiveLabel: false, decoration: "flat") {
+                        state "coolLevelDown", label:'  ', action:"coolLevelDown", icon:"st.thermostat.thermostat-down"
+        }
+        
 		main "temperature"
-        details(["temperature", "mode", "fanMode", "heatSliderControl", "heatingSetpoint", "coolSliderControl", "coolingSetpoint", "refresh"])
+		details(["temperature", "mode", "fanMode", "heatLevelDown", "heatingSetpoint", "heatLevelUp", "coolLevelDown", "coolingSetpoint", "coolLevelUp", "refresh", "configure"])
 	}
 }
 
