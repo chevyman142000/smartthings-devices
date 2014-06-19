@@ -1,6 +1,6 @@
 import groovy.json.JsonSlurper
 /**
- *  Honeywell local API
+ *  Better - Radio Thermostat
  *
  *  Copyright 2014 Dattas Moonchaser
  *
@@ -24,7 +24,7 @@ import groovy.json.JsonSlurper
  *
  */
 metadata {
-	definition (name: "Honeywell local API", namespace: "Thermostat", author: "Dattas Moonchaser") {
+	definition (name: "Better - Radio Thermostat", namespace: "Thermostat", author: "chevyman142000") {
     	capability "Temperature Measurement"
 	capability "Thermostat"
         capability "Refresh"
