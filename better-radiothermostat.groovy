@@ -58,84 +58,86 @@ metadata {
 			)
 		}
 		standardTile("mode", "device.thermostatMode", inactiveLabel: false, decoration: "flat") {
-			state "off", label:'${name}', action:"thermostat.setThermostatMode", icon:"st.thermostat.heating-cooling-off"
-			state "cool", label:'${name}', action:"thermostat.setThermostatMode", icon:"st.thermostat.cool"
-			state "heat", label:'${name}', action:"thermostat.setThermostatMode", icon:"st.thermostat.heat"
-			state "emergencyHeat", label:'${name}', action:"thermostat.setThermostatMode", icon"st.thermostat.emergency-heat"
-			state "auto", label:'${name}', action:"thermostat.setThermostatMode", icon"st.thermostat.auto"
+			state "off", label:'', action:"switchMode", icon:"st.thermostat.heating-cooling-off"
+			state "heat", label:'', action:"switchMode", icon:"st.thermostat.heat"
+			state "emergencyHeat", label:'', action:"switchMode", icon:"st.thermostat.emergency-heat"
+			state "cool", label:'', action:"switchMode", icon:"st.thermostat.cool"
+			state "auto", label:'', action:"switchMode", icon:"st.thermostat.auto"
 		}
 		standardTile("fanMode", "device.thermostatFanMode", inactiveLabel: false, decoration: "flat") {
-			state "fanAuto", label:'${name}', action:"thermostat.setThermostatFanMode", icon:"st.thermostat.fan-auto"
-            state "fanAuto/Circulate", label:'${name}', action:"thermostat.setThermostatFanMode", icon:"st.thermostat.fan-circulate"
-			state "fanOn", label:'${name}', action:"thermostat.setThermostatFanMode", icon:"st.thermostat.fan-on"
-		}
-    	valueTile("heatingSetpoint", "device.heatingSetpoint", inactiveLabel: false, decoration: "flat") {
-			state "setHeatingSetpoint", action:"thermostat.setHeatingSetpoint", backgroundColor:"#ffffff"
+			state "fanAuto", label:'', action:"switchFanMode", icon:"st.thermostat.fan-auto"
+			state "fanOn", label:'', action:"switchFanMode", icon:"st.thermostat.fan-on"
+			state "fanCirculate", label:'  ', action:"switchFanMode", icon:"st.thermostat.fan-circulate"
 		}
 		valueTile("heatingSetpoint", "device.heatingSetpoint", inactiveLabel: false, decoration: "flat") {
 			state "heat", label:'${currentValue}° heat', unit:"F", backgroundColor:"#ffffff"
 		}
-		controlTile("coolSliderControl", "device.coolingSetpoint", "slider", height: 1, width: 2, inactiveLabel: false) {
-			state "setCoolingSetpoint", action:"thermostat.setCoolingSetpoint", backgroundColor: "#1e9cbb"
-		}
 		valueTile("coolingSetpoint", "device.coolingSetpoint", inactiveLabel: false, decoration: "flat") {
 			state "cool", label:'${currentValue}° cool', unit:"F", backgroundColor:"#ffffff"
 		}
-		standardTile("refresh", "device.temperature", inactiveLabel: false, decoration: "flat") {
-			state "default", action:"refresh.refresh", icon:"st.secondary.refresh"
+		standardTile("refresh", "device.thermostatMode", inactiveLabel: false, decoration: "flat") {
+			state "default", action:"polling.poll", icon:"st.secondary.refresh"
+		}
+		standardTile("configure", "device.configure", inactiveLabel: false, decoration: "flat") {
+			state "configure", label:'  ', action:"configuration.configure", icon:"st.secondary.configure"
+		}
+        standardTile("heatLevelUp", "device.heatingSetpoint", canChangeIcon: false, inactiveLabel: false, decoration: "flat") {
+                        state "heatLevelUp", label:'  ', action:"heatLevelUp", icon:"st.thermostat.thermostat-up"
+        }
+        standardTile("heatLevelDown", "device.heatingSetpoint", canChangeIcon: false, inactiveLabel: false, decoration: "flat") {
+                        state "heatLevelDown", label:'  ', action:"heatLevelDown", icon:"st.thermostat.thermostat-down"
+        }
+        standardTile("coolLevelUp", "device.heatingSetpoint", canChangeIcon: false, inactiveLabel: false, decoration: "flat") {
+                        state "coolLevelUp", label:'  ', action:"coolLevelUp", icon:"st.thermostat.thermostat-up"
+        }
+        standardTile("coolLevelDown", "device.heatingSetpoint", canChangeIcon: false, inactiveLabel: false, decoration: "flat") {
+                        state "coolLevelDown", label:'  ', action:"coolLevelDown", icon:"st.thermostat.thermostat-down"
         }
         
 		main "temperature"
-		details(["temperature", "mode", "fanMode", "heatLevelDown", "heatingSetpoint", "heatLevelUp", "coolLevelDown", "coolingSetpoint", "coolLevelUp", "refresh"])
+		details(["temperature", "mode", "fanMode", "heatLevelDown", "heatingSetpoint", "heatLevelUp", "coolLevelDown", "coolingSetpoint", "coolLevelUp", "refresh", "configure"])
 	}
 }
 
-// parse events into attributes
-def parse(String description) {
-	log.debug "Parsing '${description}'"
-    def map = [:]
-    def retResult = []
-    def descMap = parseDescriptionAsMap(description)
-    log.debug "parse returns $descMap"
-    def body = new String(descMap["body"].decodeBase64())
-    def slurper = new JsonSlurper()
-    def result = slurper.parseText(body)
-    log.debug "json is: $result"
-    if (result.containsKey("success")){
-    	//Do nothing as nothing can be done. (runIn doesn't appear to work here and apparently you can't make outbound calls here)
-        log.debug "returning now"
-        return null
+def coolLevelUp(){
+    int nextLevel = device.currentValue("coolingSetpoint") + 1
+    
+    if( nextLevel > 99){
+    	nextLevel = 99
     }
-    if (result.containsKey("tmode")){
-    	def tmode = getModeMap()[result.tmode]
-        if(device.currentState("thermostatMode")?.value != tmode){
-            retResult << createEvent(name: "thermostatMode", value: tmode)
-        }
+    log.debug "Setting cool set point up to: ${nextLevel}"
+    setCoolingSetpoint(nextLevel)
+}
+
+def coolLevelDown(){
+    int nextLevel = device.currentValue("coolingSetpoint") - 1
+    
+    if( nextLevel < 50){
+    	nextLevel = 50
     }
-    if (result.containsKey("fmode")){
-    	def fmode = getFanModeMap()[result.fmode]
-        if (device.currentState("thermostatFanMode")?.value != fmode){
-            retResult << createEvent(name: "thermostatFanMode", value: fmode)
-        }
+    log.debug "Setting cool set point down to: ${nextLevel}"
+    setCoolingSetpoint(nextLevel)
+}
+
+def heatLevelUp(){
+    int nextLevel = device.currentValue("heatingSetpoint") + 1
+    
+    if( nextLevel > 90){
+    	nextLevel = 90
     }
-    if (result.containsKey("t_cool")){
-    	def t_cool = getTemperature(result.t_cool)
-    	if (device.currentState("coolingSetpoint")?.value != t_cool.toString()){
-            retResult << createEvent(name: "coolingSetpoint", value: t_cool)
-        }
+    log.debug "Setting heat set point up to: ${nextLevel}"
+    setHeatingSetpoint(nextLevel)
+}
+
+def heatLevelDown(){
+    int nextLevel = device.currentValue("heatingSetpoint") - 1
+    
+    if( nextLevel < 40){
+    	nextLevel = 40
     }
-    if (result.containsKey("t_heat")){
-    	def t_heat = getTemperature(result.t_heat)
-    	if (device.currentState("heatingSetpoint")?.value != t_heat.toString()){
-            retResult << createEvent(name: "heatingSetpoint", value: t_heat)
-        }
-    }
-    if (result.containsKey("temp")){
-    	def temp = getTemperature(result.temp)
-    	if (device.currentState("temperature")?.value != temp.toString()){
-            retResult << createEvent(name: "temperature", value: temp)
-        }        
-    }
+    log.debug "Setting heat set point down to: ${nextLevel}"
+    setHeatingSetpoint(nextLevel)
+}
 
     log.debug "Parse returned $retResult"
     if (retResult.size > 0){
